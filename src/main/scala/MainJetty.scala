@@ -1,12 +1,57 @@
+import org.eclipse.jetty.server.handler.{ContextHandler, ResourceHandler, HandlerList}
 import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.{ServletHolder, ServletContextHandler}
+import org.eclipse.jetty.util.resource.Resource
+import spray.servlet.{Initializer, Servlet30ConnectorServlet}
+
 
 /**
  * @author Marcin Pieciukiewicz
  */
-object MainJetty extends App {
+object MainJetty {
 
-  val server = new Server(8080)
-  server.start()
-  server.join()
+  def main(args: Array[String]) {
+    val server = new Server(8080)
+
+    val servletContext: ServletContextHandler = createSprayServletContext(server, "/rest")
+    val staticFilesContext: ContextHandler = createStaticFilesContext("/", "/static", "index.html")
+
+    val handlers = new HandlerList()
+    handlers.setHandlers(Array(servletContext, staticFilesContext))
+    server.setHandler(handlers)
+
+    server.start()
+    server.join()
+  }
+
+
+  private def createSprayServletContext(server: Server, path: String): ServletContextHandler = {
+    val servletContext = new ServletContextHandler(server, path, ServletContextHandler.SESSIONS)
+
+    servletContext.addEventListener(createSprayInitializer())
+    servletContext.addServlet(createSprayServlet(), "/")
+    servletContext
+  }
+
+  private def createSprayInitializer() = {
+    new Initializer()
+  }
+
+  private def createSprayServlet(): ServletHolder = {
+    val sprayServletHolder = new ServletHolder(new Servlet30ConnectorServlet())
+    sprayServletHolder.setAsyncSupported(true)
+    sprayServletHolder
+  }
+
+  private def createStaticFilesContext(path: String, classpathPath: String, welcomeFile: String): ContextHandler = {
+    val resourceHandler = new ResourceHandler()
+    resourceHandler.setBaseResource(Resource.newClassPathResource(classpathPath))
+    resourceHandler.setDirectoriesListed(false)
+    resourceHandler.setWelcomeFiles(Array(welcomeFile))
+    val staticFilesContext = new ContextHandler(path)
+    staticFilesContext.setHandler(resourceHandler)
+    staticFilesContext
+  }
+
 
 }
