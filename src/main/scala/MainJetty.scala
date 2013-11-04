@@ -13,8 +13,8 @@ object MainJetty {
   def main(args: Array[String]) {
     val server = new Server(8080)
 
-    val servletContext: ServletContextHandler = createSprayServletContext(server, "/rest")
-    val staticFilesContext: ContextHandler = createStaticFilesContext("/", "/static", "index.html")
+    val servletContext: ServletContextHandler = createSprayServletContext(server, "/rest/*")
+    val staticFilesContext: ContextHandler = createStaticFilesContext("/*", "/static", "index.html")
 
     val handlers = new HandlerList()
     handlers.setHandlers(Array(servletContext, staticFilesContext))
@@ -26,10 +26,10 @@ object MainJetty {
 
 
   private def createSprayServletContext(server: Server, path: String): ServletContextHandler = {
-    val servletContext = new ServletContextHandler(server, path, ServletContextHandler.SESSIONS)
+    val servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS)
 
     servletContext.addEventListener(createSprayInitializer())
-    servletContext.addServlet(createSprayServlet(), "/")
+    servletContext.addServlet(createSprayServlet(), path)
     servletContext
   }
 

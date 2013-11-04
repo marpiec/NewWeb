@@ -39,9 +39,6 @@ trait DefaultRouter extends HttpService {
         path("user") {
           complete(toJson(User("Marcin","Haslo")))
         }
-      } ~
-      pathPrefix("html") {
-        getFromResourceDirectory("html")
       }
 
     }

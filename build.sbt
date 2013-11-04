@@ -8,8 +8,10 @@ resolvers ++= Seq("spray repo" at "http://repo.spray.io",
                   "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository")
 
 libraryDependencies ++= Seq("org.eclipse.jetty" % "jetty-server" % "9.0.6.v20130930",
+                            "org.eclipse.jetty" % "jetty-servlet" % "9.0.6.v20130930",
                             "io.spray" % "spray-can" % "1.2-RC2",
                             "io.spray" % "spray-routing" % "1.2-RC2",
+                            "io.spray" % "spray-servlet" % "1.2-RC2",
                             "com.typesafe.akka" %% "akka-actor" % "2.2.3",
         					"com.typesafe.akka" %% "akka-slf4j" % "2.2.3",
         					"pl.mpieciukiewicz.mpjsons" % "mpjsons" % "1.0-SNAPSHOT",
