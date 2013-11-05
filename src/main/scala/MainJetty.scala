@@ -1,3 +1,4 @@
+import java.io.File
 import org.eclipse.jetty.server.handler.{ContextHandler, ResourceHandler, HandlerList}
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.{ServletHolder, ServletContextHandler}
@@ -45,7 +46,8 @@ object MainJetty {
 
   private def createStaticFilesContext(path: String, classpathPath: String, welcomeFile: String): ContextHandler = {
     val resourceHandler = new ResourceHandler()
-    resourceHandler.setBaseResource(Resource.newClassPathResource(classpathPath))
+    resourceHandler.setBaseResource(Resource.newResource(new File("src/main/resources/static")))
+    //resourceHandler.setBaseResource(Resource.newClassPathResource(classpathPath))
     resourceHandler.setDirectoriesListed(false)
     resourceHandler.setWelcomeFiles(Array(welcomeFile))
     val staticFilesContext = new ContextHandler(path)
