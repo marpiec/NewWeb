@@ -1,13 +1,10 @@
 import akka.actor._
-import akka.io.IO
 import akka.util.Timeout
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
-import spray.can.Http
-import spray.http.{HttpForm, MultipartFormData, HttpRequest}
-import spray.httpx.unmarshalling._
-import spray.routing.HttpService
-import JSON._
-import scala.concurrent.duration.Duration
+import spray.http.StatusCodes
+import spray.routing._
+
 
 import akka.pattern.ask
 
@@ -27,27 +24,35 @@ class DefaultListener extends Actor with DefaultRouter {
 }
 
 
-class JsonUnmarshaller[T](implicit m: ClassTag[T]) extends FromRequestUnmarshaller[T]() {
-  def apply(v1: HttpRequest): _root_.spray.httpx.unmarshalling.Deserialized[T] = {
-    Right(fromJson(v1.entity.asString, m.runtimeClass).asInstanceOf[T])
+
+trait ActorDirectives { this: HttpService =>
+  import JSON._
+
+  implicit val timeout = Timeout(5000)
+
+  def askActor[T](actor: ActorRef)(implicit messageType: ClassTag[T], ec: ExecutionContext) = {
+    extract(_.request.entity.data.asString) { json =>
+      complete {
+        (actor ? fromJson(json, messageType.runtimeClass)).map(toJson)
+      }
+    }
   }
 }
 
 
-trait DefaultRouter extends HttpService { self:DefaultListener =>
+trait DefaultRouter extends HttpService with ActorDirectives {
+  self: DefaultListener =>
 
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our Futures and Scheduler
   implicit def executionContext = actorRefFactory.dispatcher
 
-  implicit val timeout = Timeout(5000000)
 
   private val shipGame = actorRefFactory.actorOf(Props[ShipGame], "game")
 
   val route = {
     pathPrefix("rest") {
-    get {
-      pathPrefix("rest") {
+      get {
         path("") {
           complete("This is index!")
         } ~
@@ -55,22 +60,19 @@ trait DefaultRouter extends HttpService { self:DefaultListener =>
           complete("Hello better world!")
         } ~
         path("user") {
-          complete(toJson(User("Marcin","Haslo")))
+          complete(JSON.toJson(User("Marcin", "Haslo")))
         }
-      }
-    } ~
-    post {
-      path("joinAGame") {
-        entity(new JsonUnmarshaller[JoinAGameMessage]) { message =>
-          complete {
-            (shipGame ? message).map(toJson(_))
-          }
+      } ~
+      post {
+        path("joinAGame") {
+          askActor[JoinAGameMessage](shipGame)
         }
       }
     }
-    }
-
   }
+
+
+
 
 }
 

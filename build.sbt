@@ -14,7 +14,7 @@ libraryDependencies ++= Seq("org.eclipse.jetty" % "jetty-server" % "9.0.6.v20130
                             "io.spray" % "spray-servlet" % "1.2-RC2",
                             "com.typesafe.akka" %% "akka-actor" % "2.2.3",
         					"com.typesafe.akka" %% "akka-slf4j" % "2.2.3",
-        					"pl.mpieciukiewicz.mpjsons" % "mpjsons" % "1.0-SNAPSHOT",
+        					"pl.mpieciukiewicz.mpjsons" % "mpjsons" % "0.5-SNAPSHOT",
 							"ch.qos.logback"      % "logback-classic"  % "1.0.13",
 						    "com.typesafe.akka"  %% "akka-testkit"     % "2.2.3"        % "test")
 							

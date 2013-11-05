@@ -25,10 +25,12 @@ app.controller("ShipsController", function ($scope, $http) {
 
 
     $scope.joinAGame = function() {
-        $http.post('/rest/joinAGame', createJoinAGameMessage($scope.placedShips)).success(function(data) {
+        $http.post('/rest/joinAGame', createJoinAGameMessage($scope.placedShips)).
+        success(function(data, status, headers, config) {
             alert("Game joined!");
-        }).error(function(data) {
-            alert("Game joining failed!");
+        }).
+        error(function(data, status, headers, config) {
+            alert("Game joining failed! " + data+" "+status+" "+headers+" "+config);
         });
     };
 
@@ -46,7 +48,7 @@ app.controller("ShipsController", function ($scope, $http) {
 
     function createGameFields() {
         var fields = [];
-        for (var y = 0; y < 100; y++) {
+        for (var y = 0; y < 10; y++) {
             for (var x = 0; x < 10; x++) {
                 var field = {};
                 field.x = x;
