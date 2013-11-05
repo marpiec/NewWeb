@@ -1,9 +1,9 @@
-app.controller("ShipsController", function ($scope) {
+app.controller("ShipsController", function ($scope, $http) {
 
     $scope.gameName = "BattleShips";
 
     $scope.gameFields = createGameFields();
-    $scope.shipElementsToPlace = 20;
+    $scope.shipElementsToPlace = 5;
 
     $scope.placedShips = [];
 
@@ -25,13 +25,16 @@ app.controller("ShipsController", function ($scope) {
 
 
     $scope.joinAGame = function() {
-        alert("Join a game with a ships: "+JSON.stringify(createJoinAGameMessage($scope.placedShips)));
+        $http.post('/rest/joinAGame', createJoinAGameMessage($scope.placedShips)).success(function(data) {
+            alert("Game joined!");
+        }).error(function(data) {
+            alert("Game joining failed!");
+        });
     };
 
 
     function createJoinAGameMessage(placedShips) {
         var message = {};
-        message.event = "JoinAGame";
         message.ships = [];
         for(var i = 0; i < placedShips.length; i++) {
             var ship = placedShips[i];
