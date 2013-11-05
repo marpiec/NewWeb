@@ -10,6 +10,11 @@ var app = angular.module("calculatorApplication", []).config(function ($routePro
         controller: "CalculatorController"
     });
 
+    $routeProvider.when("/ships", {
+        templateUrl: "app/view/ships.html",
+        controller: "ShipsController"
+    });
+
     $routeProvider.otherwise({
         redirectTo: "/home"
     });

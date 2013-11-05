@@ -1,0 +1,16 @@
+<div>
+    <div>This is a {{gameName}} game.</div>
+
+    <div class="gameBoard">
+        <div class="field" ng-repeat="field in gameFields" ng-click="gameFieldClicked(field)"
+             ng-class="{ ship: field.ship, sea: !field.ship}"></div>
+    </div>
+
+    <div>
+        Place your ships. You've got {{shipElementsToPlace}} ship elements to place.
+    </div>
+
+    <button ng-hide="shipElementsToPlace != 0" ng-click="joinAGame()">Join a game</button>
+
+
+</div>
