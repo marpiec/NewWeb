@@ -42,13 +42,13 @@ trait ActorDirectives { this: HttpService =>
 
 trait DefaultRouter extends HttpService with ActorDirectives {
   self: DefaultListener =>
-
+  import JSON._
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our Futures and Scheduler
   implicit def executionContext = actorRefFactory.dispatcher
 
 
-  private val shipGame = actorRefFactory.actorOf(Props[ShipGame], "game")
+  private val shipGameCreator = actorRefFactory.actorOf(Props[ShipGameCreator], "gameCreator")
 
   val route = {
     pathPrefix("rest") {
@@ -56,16 +56,17 @@ trait DefaultRouter extends HttpService with ActorDirectives {
         path("") {
           complete("This is index!")
         } ~
-        path("hello") {
-          complete("Hello better world!")
-        } ~
-        path("user") {
-          complete(JSON.toJson(User("Marcin", "Haslo")))
+        path("gameEvents" / IntNumber / IntNumber) { (gameId, playerId) => {
+            complete {
+              val game = context.actorSelection("akka://example/user/listener/gameCreator/game"+gameId)
+              (game ? GetGameEvents(gameId, playerId)).map(toJson)
+            }
+          }
         }
       } ~
       post {
         path("joinAGame") {
-          askActor[JoinAGameMessage](shipGame)
+          askActor[JoinAGameMessage](shipGameCreator)
         }
       }
     }

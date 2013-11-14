@@ -15,6 +15,11 @@ var app = angular.module("calculatorApplication", []).config(function ($routePro
         controller: "ShipsController"
     });
 
+    $routeProvider.when("/shipsGame/:gameId/:playerId", {
+        templateUrl: "app/view/shipsGame.html",
+        controller: "ShipsGameController"
+    });
+
     $routeProvider.otherwise({
         redirectTo: "/home"
     });

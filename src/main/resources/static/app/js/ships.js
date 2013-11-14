@@ -1,4 +1,4 @@
-app.controller("ShipsController", function ($scope, $http) {
+app.controller("ShipsController", function ($scope, $http, $location) {
 
     $scope.gameName = "BattleShips";
 
@@ -27,7 +27,8 @@ app.controller("ShipsController", function ($scope, $http) {
     $scope.joinAGame = function() {
         $http.post('/rest/joinAGame', createJoinAGameMessage($scope.placedShips)).
         success(function(data, status, headers, config) {
-            alert("Game joined!");
+            alert("Game joined! "+data.gameId);
+            $location.path("shipsGame/"+data.gameId+"/"+data.playerId);
         }).
         error(function(data, status, headers, config) {
             alert("Game joining failed! " + data+" "+status+" "+headers+" "+config);
