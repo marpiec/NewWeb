@@ -1,3 +1,5 @@
+package pl.mpieciukiewicz.ships.util
+
 import pl.marpiec.mpjsons.MPJson
 
 /**

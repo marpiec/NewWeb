@@ -1,3 +1,5 @@
+package pl.mpieciukiewicz.ships.webserver
+
 import java.io.File
 import org.eclipse.jetty.server.handler.{ContextHandler, ResourceHandler, HandlerList}
 import org.eclipse.jetty.server.Server
