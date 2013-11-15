@@ -36,27 +36,93 @@ class ShipGameCreator extends Actor {
 
 
 case class UserJoined(playerId: Int, playerShips: List[XY])
-case class GetGameEvents(gameId:Int, playerId:Int)
+
+
+case class RegisterListener(playerId: Int, listener:ActorRef)
 
 class GameEvent(val event: AnyRef) {
   val name = event.getClass.getSimpleName
 }
 
 
+
 class ShipGame(val gameId: Int, val userAJoined:UserJoined) extends Actor {
 
-  var gameEvents = ListBuffer[GameEvent](new GameEvent(userAJoined))
+  val gameEvents = ListBuffer[GameEvent](new GameEvent(userAJoined))
   val eventsSent = mutable.Map(0 -> 0, 1 -> 0)
-
+  val eventListeners = ListBuffer[RegisterListener]()
+  
+  
   def receive: Actor.Receive = {
 
-    case message:GetGameEvents => {
-      println("GetGameEvents received "+message)
-      sender ! gameEvents.slice(eventsSent(message.playerId), gameEvents.size)
-      eventsSent(message.playerId) = gameEvents.size
+    case userJoined: UserJoined => {
+      println("Second user Joined!")
+      gameEvents += new GameEvent(userJoined)
+    }
+//    case getGameEvents:GetGameEvents => {
+//      println("GetGameEvents received "+getGameEvents)
+//      sender ! gameEvents.slice(eventsSent(getGameEvents.playerId), gameEvents.size)
+//      eventsSent(getGameEvents.playerId) = gameEvents.size
+//    }
+    case registerListener: RegisterListener => {
+      eventListeners += registerListener
+      broadcastEvents(registerListener)
     }
 
+    case message => println(message)
+  }
 
-    case _ => println(receive)
+
+  def addGameEventAndBroadcastIt(event: AnyRef) {
+    gameEvents += new GameEvent(event)
+    
+    eventListeners.foreach(listener => {
+      broadcastEvents(listener)
+    })
+  }
+
+  def broadcastEvents(listener: RegisterListener) {
+    val eventsToSend: List[GameEvent] = gameEvents.slice(eventsSent(listener.playerId), gameEvents.size).toList
+    if(eventsToSend.nonEmpty) {
+      sender ! GameEvents(eventsToSend)
+      eventsSent(listener.playerId) = gameEvents.size
+    }
   }
 }
+
+case class GetGameEvents(val gameId: Int, val playerId:Int)
+case class GameEvents(events:List[GameEvent])
+
+class GameEventListener extends Actor {
+  var respondTo: ActorRef = _
+
+  def receive = {
+    case getGameEvents: GetGameEvents => {
+      val game = context.actorSelection("akka://example/user/listener/gameCreator/game"+getGameEvents.gameId)
+      game ! RegisterListener(getGameEvents.playerId, self)
+      respondTo = sender
+    }
+    case gameEvents: GameEvents => {
+      respondTo ! gameEvents.events
+    }
+    case message => println(message)
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -7,13 +7,18 @@ app.controller("ShipsGameController", function ($scope, $http, $routeParams) {
     $scope.opponentBoard = createGameFields();
 
 
-    $http.get('/rest/gameEvents/'+gameId + '/'+playerId).
-        success(function(data, status, headers, config) {
-            alert("Game event received! "+JSON.stringify(data));
-        }).
-        error(function(data, status, headers, config) {
-            alert("Game event failed to receive!");
-        });
+    function listenToGameEvents() {
+        $http.get('/rest/gameEvents/'+gameId + '/'+playerId).
+            success(function(data, status, headers, config) {
+                alert("Game event received! "+JSON.stringify(data));
+                listenToGameEvents();
+            }).
+            error(function(data, status, headers, config) {
+                alert("Game event failed to receive!");
+            });
+    }
+
+    listenToGameEvents();
 
     function createGameFields() {
         var fields = [];

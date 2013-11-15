@@ -58,8 +58,8 @@ trait DefaultRouter extends HttpService with ActorDirectives {
         } ~
         path("gameEvents" / IntNumber / IntNumber) { (gameId, playerId) => {
             complete {
-              val game = context.actorSelection("akka://example/user/listener/gameCreator/game"+gameId)
-              (game ? GetGameEvents(gameId, playerId)).map(toJson)
+              val gameEventListener = context.actorOf(Props(classOf[GameEventListener]))
+              (gameEventListener.?(GetGameEvents(gameId, playerId))(Timeout(30000)).map(toJson))
             }
           }
         }
