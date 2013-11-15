@@ -2,13 +2,13 @@
     <div>Sea battle!</div>
 
     <div class="gameBoard">
-        <div class="field" ng-repeat="field in userBoard" ng-click="gameFieldClicked(field)"
-             ng-class="{ ship: field.ship, sea: !field.ship}"></div>
+        <div class="field" ng-repeat="field in userBoard"
+             ng-class="{ ship: field.ship, sea: !field.ship, hit: field.hit}"></div>
     </div>
 
     <div class="gameBoard">
-        <div class="field" ng-repeat="field in opponentBoard" ng-click="gameFieldClicked(field)"
-             ng-class="{ ship: field.ship, sea: !field.ship}"></div>
+        <div class="field" ng-repeat="field in opponentBoard" ng-click="opponentFieldClicked(field)"
+             ng-class="{ ship: field.ship, sea: !field.ship, hit: field.hit}"></div>
     </div>
 
 </div>

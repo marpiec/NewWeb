@@ -94,6 +94,10 @@
     background-color: #849096;
 }
 
+.gameBoard .hit {
+    background-color: #961d15;
+}
+
 
 .gameBoard .field:hover {
     background-color: #eee;
