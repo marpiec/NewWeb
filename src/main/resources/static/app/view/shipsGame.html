@@ -3,12 +3,12 @@
 
     <div class="gameBoard">
         <div class="field" ng-repeat="field in userBoard"
-             ng-class="{ ship: field.ship, sea: !field.ship, hit: field.hit}"></div>
+             ng-class="{ ship: field.ship, sea: !field.ship, hit: field.hit, missed: field.missed}"></div>
     </div>
 
     <div class="gameBoard">
         <div class="field" ng-repeat="field in opponentBoard" ng-click="opponentFieldClicked(field)"
-             ng-class="{ ship: field.ship, sea: !field.ship, hit: field.hit}"></div>
+             ng-class="{ ship: field.ship, sea: !field.ship, hit: field.hit, missed: field.missed}"></div>
     </div>
 
 </div>

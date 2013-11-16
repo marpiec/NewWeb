@@ -98,6 +98,10 @@
     background-color: #961d15;
 }
 
+.gameBoard .missed {
+    background-color: #BCC4D3;
+}
+
 
 .gameBoard .field:hover {
     background-color: #eee;

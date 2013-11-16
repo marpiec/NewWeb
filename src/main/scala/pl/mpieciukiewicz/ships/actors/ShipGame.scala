@@ -10,6 +10,11 @@ object ShipGame {
   case class UserJoined(playerId: Int, playerShips: List[XY])
   case class RegisterListener(playerId: Int, eventsHandled: Int, listener: ActorRef)
   case class PlayerFired(playerId: Int, location: XY)
+  
+  
+  case class CurrentUserJoined(playerShips: List[XY])
+  case class OpponentJoined()
+  case class Fired(playerId: Int, location: XY, hit: Boolean)
 }
 
 /**
@@ -18,8 +23,9 @@ object ShipGame {
 class ShipGame(val gameId: Int, val firstUserJoined: UserJoined) extends Actor {
 
 
+  val playerAEvents = ListBuffer[GameEvent](new GameEvent(CurrentUserJoined(firstUserJoined.playerShips)))
+  val playerBEvents = ListBuffer[GameEvent](new GameEvent(OpponentJoined()))
 
-  val gameEvents = ListBuffer[GameEvent](new GameEvent(firstUserJoined))
   val eventOneTimeListeners = ListBuffer[RegisterListener]()
 
   var playerA = firstUserJoined.playerId
@@ -32,14 +38,27 @@ class ShipGame(val gameId: Int, val firstUserJoined: UserJoined) extends Actor {
 
   def receive: Actor.Receive = {
 
-    case userJoined: UserJoined => {
-      addGameEventAndBroadcastIt(userJoined)
-      playerB = userJoined.playerId
-      playerBShips = userJoined.playerShips
+    case secondUserJoined: UserJoined => {
+      playerAEvents += new GameEvent(OpponentJoined())
+      playerBEvents += new GameEvent(CurrentUserJoined(secondUserJoined.playerShips))
+      broadcastEvents()
+      playerB = secondUserJoined.playerId
+      playerBShips = secondUserJoined.playerShips
     }
     case userFired: PlayerFired => {
       if (userFired.playerId == playerTurn) {
-        addGameEventAndBroadcastIt(userFired)
+
+        val hit = if (userFired.playerId == playerA)
+          playerBShips.contains(userFired.location) else
+          playerAShips.contains(userFired.location)
+
+        val fired = Fired(userFired.playerId, userFired.location, hit)
+
+        playerAEvents += new GameEvent(fired)
+        playerBEvents += new GameEvent(fired)
+
+        broadcastEvents()
+
         playerTurn = if (playerTurn == playerA) playerB else playerA
       }
     }
@@ -47,23 +66,25 @@ class ShipGame(val gameId: Int, val firstUserJoined: UserJoined) extends Actor {
     case registerListener: RegisterListener => {
       eventOneTimeListeners += registerListener
       println("+++ Registering lister for user " + registerListener.playerId + " now there are " + eventOneTimeListeners.size + " listeners")
-      broadcastEvents(registerListener)
+      broadcastEventsToListener(registerListener)
     }
 
     case message => println(message)
   }
 
 
-  def addGameEventAndBroadcastIt(event: AnyRef) {
-    gameEvents += new GameEvent(event)
-
-    eventOneTimeListeners.toList.foreach(listener => {
-      broadcastEvents(listener)
-    })
+  def broadcastEvents() {
+    eventOneTimeListeners.toList.foreach(broadcastEventsToListener)
   }
 
-  def broadcastEvents(listener: RegisterListener) {
-    val eventsToSend: List[GameEvent] = gameEvents.slice(listener.eventsHandled, gameEvents.size).toList
+
+  def broadcastEventsToListener(listener: ShipGame.RegisterListener) {
+    val events = if (listener.playerId == playerA) playerAEvents else playerBEvents
+    broadcastEvents(events, listener)
+  }
+
+  def broadcastEvents(events:  ListBuffer[GameEvent], listener: RegisterListener) {
+    val eventsToSend: List[GameEvent] = events.slice(listener.eventsHandled, events.size).toList
     if (eventsToSend.nonEmpty) {
       println("--- Bradcasting " + eventsToSend.size + " messages to user " + listener.playerId + "listeners count " + eventOneTimeListeners.size)
       eventOneTimeListeners -= listener //???
