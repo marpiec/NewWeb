@@ -25,7 +25,7 @@ app.controller("ShipsController", function ($scope, $http, $location) {
 
 
     $scope.joinAGame = function() {
-        $http.post('/rest/joinAGame', createJoinAGameMessage($scope.placedShips)).
+        $http.post('/rest/joinAGame', createJoinAGameMessage($scope.placedShips), {headers : {"Content-Type":"application/json; charset=UTF-8"}}).
         success(function(data, status, headers, config) {
             $location.path("shipsGame/"+data.gameId+"/"+data.playerId);
         }).

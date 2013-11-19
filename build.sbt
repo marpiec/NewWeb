@@ -5,7 +5,7 @@ version := "1.0"
 scalaVersion := "2.10.3"
 
 resolvers ++= Seq("spray repo" at "http://repo.spray.io",
-                  "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository")
+                  "Local Maven" at "file:///C:/maven-repo/")
 
 libraryDependencies ++= Seq("org.eclipse.jetty" % "jetty-server" % "9.0.6.v20130930",
                             "org.eclipse.jetty" % "jetty-servlet" % "9.0.6.v20130930",
@@ -14,7 +14,9 @@ libraryDependencies ++= Seq("org.eclipse.jetty" % "jetty-server" % "9.0.6.v20130
                             "io.spray" % "spray-servlet" % "1.2-RC2",
                             "com.typesafe.akka" %% "akka-actor" % "2.2.3",
         					"com.typesafe.akka" %% "akka-slf4j" % "2.2.3",
-        					"pl.mpieciukiewicz.mpjsons" % "mpjsons" % "0.5-SNAPSHOT",
+        					"pl.mpieciukiewicz.mpjsons" % "mpjsons" % "0.6.1-SNAPSHOT",
+        					"net.sf.json-lib" % "json-lib" % "2.4" classifier "jdk15",
+        					"xom" % "xom" % "1.2.5",
 							"ch.qos.logback"      % "logback-classic"  % "1.0.13",
 						    "com.typesafe.akka"  %% "akka-testkit"     % "2.2.3"        % "test")
 							

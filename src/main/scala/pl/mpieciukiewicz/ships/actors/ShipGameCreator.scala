@@ -7,7 +7,7 @@ import pl.mpieciukiewicz.ships.actors.ShipGame.UserJoined
 
 
 object ShipGameCreator {
-  case class JoinAGameMessage(ships: List[XY])
+  case class JoinAGame(ships: List[XY])
   case class UserJoinedGame(gameId: Int, playerId: Int)
 }
 
@@ -18,7 +18,7 @@ class ShipGameCreator extends Actor {
   var lastGameOption: Option[ActorRef] = None
 
   def receive: Actor.Receive = {
-    case message: JoinAGameMessage => {
+    case message: JoinAGame => {
 
       val currentGameId = gamesCounter
 

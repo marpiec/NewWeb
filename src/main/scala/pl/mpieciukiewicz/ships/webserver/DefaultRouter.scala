@@ -9,9 +9,12 @@ import spray.routing._
 
 import pl.mpieciukiewicz.ships.webserver.sprayutil.ActorDirectives
 import pl.mpieciukiewicz.ships.actors.GameEventListener.GetGameEvents
-import pl.mpieciukiewicz.ships.actors.ShipGameCreator.JoinAGameMessage
+import pl.mpieciukiewicz.ships.actors.ShipGameCreator.JoinAGame
 import pl.mpieciukiewicz.ships.actors.ShipGame.PlayerFired
-
+import pl.mpieciukiewicz.ships.util.{MyXMLSerializer, MyJSONSerializer}
+import spray.http.HttpHeaders.`Content-Type`
+import spray.http.ContentType
+import pl.mpieciukiewicz.ships.model.XY
 
 
 class DefaultRouter extends HttpService with Actor with ActorDirectives {
@@ -25,6 +28,9 @@ class DefaultRouter extends HttpService with Actor with ActorDirectives {
 
   def receive = runRoute(route)
 
+
+  val contentType = optionalHeaderValuePF { case `Content-Type`(ct) => ct }
+
   val route = {
     pathPrefix("rest") {
       get {
@@ -32,26 +38,39 @@ class DefaultRouter extends HttpService with Actor with ActorDirectives {
           complete("This is index!")
         } ~
         path("gameEvents" / IntNumber / IntNumber / IntNumber) { (gameId, playerId, eventsHandled) => {
-            complete {
-              val gameEventListener = context.actorOf(Props(classOf[GameEventListener], listenerCounter))
-              listenerCounter += 1
-              askActor(gameEventListener, GetGameEvents(gameId, playerId, eventsHandled), Timeout(30000))
+          contentType { ct =>
+              implicit val serializer = getSerializer(ct)
+              complete {
+                val gameEventListener = context.actorOf(Props(classOf[GameEventListener], listenerCounter))
+                listenerCounter += 1
+                askActor(gameEventListener, GetGameEvents(gameId, playerId, eventsHandled), Timeout(30000))
+              }
             }
           }
         }
       } ~
       post {
-        path("joinAGame") {
-          askActorWithMessage[JoinAGameMessage](SelectActor.gameCreator())//shipGameCreator)
-        } ~
-        path("game" / IntNumber / "fire") { gameId =>
-          tellActorTheMessage[PlayerFired](SelectActor.game(gameId))
+        contentType { ct =>
+          implicit val serializer = getSerializer(ct)
+          path("joinAGame") {
+            askActorWithMessage[JoinAGame](SelectActor.gameCreator())
+          } ~
+          path("game" / IntNumber / "fire") { gameId =>
+            tellActorTheMessage[PlayerFired](SelectActor.game(gameId))
+          }
         }
       }
     }
   }
 
 
+  def getSerializer(contentType:Option[ContentType]) = {
+    if(contentType.isDefined && contentType.get.mediaType.value.equals("application/xml")) {
+      MyXMLSerializer
+    } else {
+      MyJSONSerializer
+    }
+  }
 
 
 }

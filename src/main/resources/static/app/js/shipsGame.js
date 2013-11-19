@@ -1,5 +1,6 @@
 app.controller("ShipsGameController", function ($scope, $http, $routeParams) {
 
+
     var gameId = parseInt($routeParams.gameId);
     var playerId = parseInt($routeParams.playerId);
 
@@ -10,7 +11,7 @@ app.controller("ShipsGameController", function ($scope, $http, $routeParams) {
 
 
     $scope.opponentFieldClicked = function (field) {
-        $http.post('/rest/game/' + gameId + '/fire', createFireMessage(field)).
+        $http.post('/rest/game/' + gameId + '/fire', createFireMessage(field), {headers : {"Content-Type":"application/json; charset=UTF-8"}}).
             error(function (data, status, headers, config) {
                 alert("Connection error on fire!");
             });
@@ -26,13 +27,13 @@ app.controller("ShipsGameController", function ($scope, $http, $routeParams) {
     }
 
     function listenToGameEvents() {
-        $http.get('/rest/gameEvents/' + gameId + '/' + playerId + '/' + eventsHandled).
+        $http.get('/rest/gameEvents/' + gameId + '/' + playerId + '/' + eventsHandled, {headers : {"Content-Type":"application/json; charset=UTF-8"}}).
             success(function (data, status, headers, config) {
                 processEvents(data);
-                listenToGameEvents();
+                //listenToGameEvents();
             }).
             error(function (data, status, headers, config) {
-                listenToGameEvents();
+                //listenToGameEvents();
             });
     }
 

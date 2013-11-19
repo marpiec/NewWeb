@@ -5,9 +5,8 @@ import akka.util.Timeout
 import akka.actor.{ActorSelection, ActorRef}
 import scala.reflect.ClassTag
 import scala.concurrent.ExecutionContext
-import pl.mpieciukiewicz.ships.util.JSON
-import JSON._
 import akka.pattern.ask
+import pl.mpieciukiewicz.ships.util.Serializer
 
 
 /**
@@ -19,35 +18,33 @@ trait ActorDirectives {
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our Futures and Scheduler
 
   implicit val defaultTimeout = Timeout(5000)
-  val emptyJsonObject = "{}"
+  val emptyObject = ""
 
-
-
-  def askActorWithMessage[T](actor: ActorSelection)(implicit messageType: ClassTag[T], ec: ExecutionContext) = {
+  def askActorWithMessage[T](actor: ActorSelection)(implicit messageType: ClassTag[T], ec: ExecutionContext, serializer: Serializer) = {
     extract(_.request.entity.data.asString) {
-      json =>
+      dataString =>
         complete {
-          (actor ? fromJson(json, messageType.runtimeClass)).map(toJson)
+          (actor ? serializer.deserialize(dataString, messageType.runtimeClass)).map(serializer.serialize)
         }
     }
   }
 
-  def tellActorTheMessage[T](actor: ActorSelection)(implicit messageType: ClassTag[T], ec: ExecutionContext) = {
+  def tellActorTheMessage[T](actor: ActorSelection)(implicit messageType: ClassTag[T], ec: ExecutionContext, serializer: Serializer) = {
     extract(_.request.entity.data.asString) {
-      json =>
+      dataString =>
         complete {
-          actor ! fromJson(json, messageType.runtimeClass)
-          emptyJsonObject
+          actor ! serializer.deserialize(dataString, messageType.runtimeClass)
+          emptyObject
         }
     }
   }
 
-  def askActor(actor: ActorRef, message: AnyRef)(implicit ec: ExecutionContext) = {
-    actor.ask(message).map(toJson)
+  def askActor(actor: ActorRef, message: AnyRef)(implicit ec: ExecutionContext, serializer: Serializer) = {
+    actor.ask(message).map(serializer.serialize)
   }
 
-  def askActor(actor: ActorRef, message: AnyRef, timeout: Timeout)(implicit ec: ExecutionContext) = {
-    actor.ask(message)(timeout).map(toJson)
+  def askActor(actor: ActorRef, message: AnyRef, timeout: Timeout)(implicit ec: ExecutionContext, serializer: Serializer) = {
+    actor.ask(message)(timeout).map(serializer.serialize)
   }
 
 }
